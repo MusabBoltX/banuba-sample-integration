@@ -9,12 +9,19 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-const banubaToken = <#"Place Token here";#>;
+String banubaToken = "";
 
 enum EntryPage { camera, image, touchUp, arCloud }
 
-void main() {
+void main() async {
+  // Load environment variables from .env file
+  await dotenv.load(fileName: ".env");
+
+  // Initialize the banuba token from environment variables
+  banubaToken = dotenv.env['BANUBA_TOKEN'] ?? "";
+
   runApp(const MaterialApp(home: MyApp()));
 }
 
