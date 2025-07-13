@@ -33,6 +33,7 @@ class CameraControls extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // Flashlight button (left)
+
           _buildCircularButton(
             icon: enableFlashlight ? Icons.flash_on : Icons.flash_off,
             onTap: onFlashlightToggle,

@@ -12,6 +12,7 @@ import '../utils/helpers.dart';
 import '../widgets/camera_controls.dart';
 import '../widgets/touch_up_panel.dart';
 import '../widgets/video_player_widget.dart';
+import '../widgets/filter_selector.dart';
 
 /// Clean, modular camera page with separated concerns
 class CameraPageClean extends StatefulWidget {
@@ -46,6 +47,7 @@ class _CameraPageCleanState extends State<CameraPageClean>
   final _effects = CameraSettings.availableEffects;
   int _currentEffectIndex = -1;
   String? _currentEffectName = null;
+  bool _showEffectsPanel = false;
 
   // Touch-up features
   late List<TouchUpCategory> _touchUpCategories;
@@ -103,6 +105,28 @@ class _CameraPageCleanState extends State<CameraPageClean>
     await _banubaSdkManager.openCamera();
     await _banubaSdkManager.attachWidget(_epWidget.banubaId);
     _banubaSdkManager.startPlayer();
+
+    // Test if effects can be loaded
+    debugPrint('CameraPageClean: Camera opened, testing effect loading...');
+    await _testEffectLoading();
+  }
+
+  Future<void> _testEffectLoading() async {
+    try {
+      // Test with a simple effect first
+      debugPrint('CameraPageClean: Testing effect loading with 80s effect...');
+      await _banubaSdkManager.loadEffect('effects/80s', false);
+      debugPrint('CameraPageClean: 80s effect loaded successfully for testing');
+
+      // Unload it immediately
+      await _banubaSdkManager.unloadEffect();
+      debugPrint('CameraPageClean: Test effect unloaded successfully');
+
+      showToastMessage('Effects system ready! ✨');
+    } catch (e) {
+      debugPrint('CameraPageClean: Error testing effect loading: $e');
+      showToastMessage('Effects system error: $e');
+    }
   }
 
   // Camera Controls
@@ -303,6 +327,15 @@ class _CameraPageCleanState extends State<CameraPageClean>
               child: _buildTopControls(),
             ),
 
+            // Effects panel
+            if (_showEffectsPanel)
+              Positioned(
+                top: statusBarHeight + 80,
+                left: 20,
+                right: 20,
+                child: _buildEffectsPanel(),
+              ),
+
             // Touch-up panel on the right side
             if (_showTouchUpPanel)
               Positioned(
@@ -357,8 +390,45 @@ class _CameraPageCleanState extends State<CameraPageClean>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const SizedBox(width: 50),
-          const SizedBox(width: 50),
+          // Left side - Effects toggle button
+          // _buildCircularButton(
+          //   icon: Icons.filter_alt,
+          //   onTap: () {
+          //     setState(() {
+          //       _showEffectsPanel = !_showEffectsPanel;
+          //       // Close touch-up panel if effects panel is opened
+          //       if (_showEffectsPanel) {
+          //         _showTouchUpPanel = false;
+          //       }
+          //     });
+          //   },
+          //   backgroundColor: _showEffectsPanel ? Colors.blue : Colors.black54,
+          //   isActive: _showEffectsPanel,
+          // ),
+          //
+          // // Center - Test button (temporary for debugging)
+          // _buildCircularButton(
+          //   icon: Icons.bug_report,
+          //   onTap: () async {
+          //     debugPrint('CameraPageClean: Testing ColorTest effect...');
+          //     try {
+          //       await _banubaSdkManager.loadEffect('effects/ColorTest', false);
+          //       showToastMessage('ColorTest effect loaded! 🧪');
+          //       setState(() {
+          //         _currentEffectName = 'ColorTest';
+          //         _currentEffectIndex = _effects.indexOf('ColorTest');
+          //       });
+          //     } catch (e) {
+          //       debugPrint(
+          //           'CameraPageClean: Error testing ColorTest effect: $e');
+          //       showToastMessage('Error: $e');
+          //     }
+          //   },
+          //   backgroundColor: Colors.orange,
+          //   size: 35,
+          // ),
+
+          // Right side - Touch-up toggle button
           _buildCircularButton(
             icon: Icons.face_retouching_natural,
             onTap: () async {
@@ -367,6 +437,10 @@ class _CameraPageCleanState extends State<CameraPageClean>
               }
               setState(() {
                 _showTouchUpPanel = !_showTouchUpPanel;
+                // Close effects panel if touch-up panel is opened
+                if (_showTouchUpPanel) {
+                  _showEffectsPanel = false;
+                }
               });
             },
             backgroundColor: _showTouchUpPanel ? Colors.purple : Colors.black54,
@@ -398,6 +472,183 @@ class _CameraPageCleanState extends State<CameraPageClean>
           icon,
           color: Colors.white,
           size: size * 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEffectsPanel() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.black87,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white24, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Filters',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _showEffectsPanel = false;
+                  });
+                  _showAdvancedFilterSelector();
+                },
+                child: const Text(
+                  'More',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 80,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _buildEffectButton('None', null,
+                    isSelected: _currentEffectName == null),
+                const SizedBox(width: 12),
+                ..._effects.take(5).map((effect) => Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: _buildEffectButton(effect, effect,
+                          isSelected: _currentEffectName == effect),
+                    )),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEffectButton(String label, String? effect,
+      {required bool isSelected}) {
+    return GestureDetector(
+      onTap: () async {
+        debugPrint('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+        debugPrint('CameraPageClean: Effect button tapped: $label');
+        try {
+          if (effect == null) {
+            debugPrint('CameraPageClean: Removing current effect');
+            await _banubaSdkManager.unloadEffect();
+            setState(() {
+              _currentEffectName = null;
+              _currentEffectIndex = -1;
+            });
+            showToastMessage('Filter removed! 📷');
+          } else {
+            debugPrint('CameraPageClean: Loading effect: $effect');
+            setState(() {
+              _currentEffectName = effect;
+              _currentEffectIndex = _effects.indexOf(effect);
+            });
+
+            // Load the effect with proper error handling
+            await _banubaSdkManager.loadEffect('effects/$effect', false);
+            debugPrint('CameraPageClean: Effect loaded successfully: $effect');
+            showToastMessage('${effect} filter applied! ✨');
+          }
+        } catch (e) {
+          debugPrint('CameraPageClean: Error loading effect $effect: $e');
+          showToastMessage('Error loading filter: $e');
+          // Reset state on error
+          setState(() {
+            _currentEffectName = null;
+            _currentEffectIndex = -1;
+          });
+        }
+
+        setState(() {
+          _showEffectsPanel = false;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.white24,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.blue : Colors.white38,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAdvancedFilterSelector() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          child: FilterSelector(
+            currentFilter: _currentEffectName,
+            onFilterSelected: (filterName) async {
+              try {
+                if (filterName == null) {
+                  debugPrint(
+                      'CameraPageClean: Removing effect from advanced selector');
+                  await _banubaSdkManager.unloadEffect();
+                  setState(() {
+                    _currentEffectName = null;
+                    _currentEffectIndex = -1;
+                  });
+                  showToastMessage('Filter removed! 📷');
+                } else {
+                  debugPrint(
+                      'CameraPageClean: Loading effect from advanced selector: $filterName');
+                  setState(() {
+                    _currentEffectName = filterName;
+                    _currentEffectIndex = _effects.indexOf(filterName);
+                  });
+                  await _banubaSdkManager.loadEffect(
+                      'effects/$filterName', false);
+                  debugPrint(
+                      'CameraPageClean: Advanced effect loaded successfully: $filterName');
+                  showToastMessage('${filterName} filter applied! ✨');
+                }
+              } catch (e) {
+                debugPrint(
+                    'CameraPageClean: Error loading advanced effect $filterName: $e');
+                showToastMessage('Error loading filter: $e');
+                setState(() {
+                  _currentEffectName = null;
+                  _currentEffectIndex = -1;
+                });
+              }
+            },
+          ),
         ),
       ),
     );

@@ -9,6 +9,7 @@ import 'package:flutter/gestures.dart';
 import 'package:video_player/video_player.dart';
 
 import 'main.dart';
+import 'widgets/filter_selector.dart';
 
 typedef List<String> Processor(double progress);
 
@@ -38,7 +39,16 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
 
   final _captureAudioInVideoRecording = true;
 
-  final _effects = ["80s", "TouchUp"];
+  final _effects = [
+    "80s",
+    "TouchUp",
+    "Vintage",
+    "Cinematic",
+    "Neon",
+    "Monochrome",
+    "Sunset",
+    "Cyberpunk"
+  ];
   int _currentEffectIndex = -1;
   String? _currentEffectName = null;
 
@@ -46,7 +56,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   bool _isFacingFront = true;
   double _zoom = 1.0;
   bool _enableFlashlight = false;
-  bool _showEffectsPanel = false;
+  bool _showEffectsPanel = true;
   bool _showPreview = false;
   bool _showTouchUpPanel = false;
   bool _showVideoPreview = false;
@@ -554,6 +564,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       },
       child: Scaffold(
         backgroundColor: Colors.black,
+        // floatingActionButton: _buildEffectsPanel(),
         body: Stack(
           children: [
             // Camera view
@@ -835,8 +846,21 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Left side - empty for balance
-          const SizedBox(width: 50),
+          // Left side - Effects toggle button
+          _buildCircularButton(
+            icon: Icons.filter_alt,
+            onTap: () {
+              setState(() {
+                _showEffectsPanel = !_showEffectsPanel;
+                // Close touch-up panel if effects panel is opened
+                if (_showEffectsPanel) {
+                  _showTouchUpPanel = false;
+                }
+              });
+            },
+            backgroundColor: _showEffectsPanel ? Colors.blue : Colors.black54,
+            isActive: _showEffectsPanel,
+          ),
 
           // Center - empty for balance
           const SizedBox(width: 50),
@@ -851,6 +875,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               }
               setState(() {
                 _showTouchUpPanel = !_showTouchUpPanel;
+                // Close effects panel if touch-up panel is opened
+                if (_showTouchUpPanel) {
+                  _showEffectsPanel = false;
+                }
               });
             },
             backgroundColor: _showTouchUpPanel ? Colors.purple : Colors.black54,
@@ -872,28 +900,87 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Effects',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildEffectButton('None', null,
-                  isSelected: _currentEffectName == null),
-              const SizedBox(width: 12),
-              ..._effects.map((effect) => Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: _buildEffectButton(effect, effect,
-                        isSelected: _currentEffectName == effect),
-                  )),
+              const Text(
+                'Filters',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _showEffectsPanel = false;
+                  });
+                  _showAdvancedFilterSelector();
+                },
+                child: const Text(
+                  'More',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 80,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _buildEffectButton('None', null,
+                    isSelected: _currentEffectName == null),
+                const SizedBox(width: 12),
+                ..._effects.take(5).map((effect) => Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: _buildEffectButton(effect, effect,
+                          isSelected: _currentEffectName == effect),
+                    )),
+              ],
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  void _showAdvancedFilterSelector() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          child: FilterSelector(
+            currentFilter: _currentEffectName,
+            onFilterSelected: (filterName) async {
+              if (filterName == null) {
+                await _banubaSdkManager.unloadEffect();
+                setState(() {
+                  _currentEffectName = null;
+                  _currentEffectIndex = -1;
+                });
+              } else {
+                setState(() {
+                  _currentEffectName = filterName;
+                  _currentEffectIndex = _effects.indexOf(filterName);
+                });
+                await _banubaSdkManager.loadEffect(
+                    'effects/$filterName', false);
+              }
+            },
+          ),
+        ),
       ),
     );
   }

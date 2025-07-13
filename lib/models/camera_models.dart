@@ -12,5 +12,16 @@ enum ZoomLevel { x1, x2, x3 }
 class CameraSettings {
   static const Size videoResolutionHD = Size(720, 1280);
   static const bool captureAudioInVideoRecording = true;
-  static const List<String> availableEffects = ["80s", "TouchUp"];
+  static const List<String> availableEffects = [
+    "80s",
+    "TouchUp",
+    "ColorTest",
+    "SimpleVintage",
+    "Vintage",
+    "Cinematic",
+    "Neon",
+    "Monochrome",
+    "Sunset",
+    "Cyberpunk"
+  ];
 }

@@ -35,7 +35,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final buttonStyle = ElevatedButton.styleFrom(
-      shape: const StadiumBorder(),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
       fixedSize: Size(MediaQuery.of(context).size.width / 2.0, 50),
     );
     Text textWidget(String text) {
@@ -47,36 +51,40 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Face AR Flutter Sample'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: const Text('Banuba Sample Integration'),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ElevatedButton(
-            style: buttonStyle,
-            onPressed: () => _navigateToPage(EntryPage.camera),
-            child: textWidget('Open Camera'),
-          ),
-          SizedBox.fromSize(size: const Size.fromHeight(20.0)),
-          ElevatedButton(
-            style: buttonStyle,
-            onPressed: () => _navigateToPage(EntryPage.image),
-            child: textWidget('Image processing'),
-          ),
-          SizedBox.fromSize(size: const Size.fromHeight(20.0)),
-          ElevatedButton(
-            style: buttonStyle,
-            onPressed: () => _navigateToPage(EntryPage.touchUp),
-            child: textWidget('Touch Up features'),
-          ),
-          SizedBox.fromSize(size: const Size.fromHeight(20.0)),
-          ElevatedButton(
-            style: buttonStyle,
-            onPressed: () => _navigateToPage(EntryPage.arCloud),
-            child: textWidget('Load from AR Cloud'),
-          ),
-        ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              style: buttonStyle,
+              onPressed: () => _navigateToPage(EntryPage.camera),
+              child: textWidget('Open Camera'),
+            ),
+            // SizedBox.fromSize(size: const Size.fromHeight(20.0)),
+            // ElevatedButton(
+            //   style: buttonStyle,
+            //   onPressed: () => _navigateToPage(EntryPage.image),
+            //   child: textWidget('Image processing'),
+            // ),
+            // SizedBox.fromSize(size: const Size.fromHeight(20.0)),
+            // ElevatedButton(
+            //   style: buttonStyle,
+            //   onPressed: () => _navigateToPage(EntryPage.touchUp),
+            //   child: textWidget('Touch Up features'),
+            // ),
+            // SizedBox.fromSize(size: const Size.fromHeight(20.0)),
+            // ElevatedButton(
+            //   style: buttonStyle,
+            //   onPressed: () => _navigateToPage(EntryPage.arCloud),
+            //   child: textWidget('Load from AR Cloud'),
+            // ),
+          ],
+        ),
       ),
     );
   }
