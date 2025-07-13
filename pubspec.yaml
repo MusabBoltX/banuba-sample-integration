@@ -24,6 +24,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   banuba_sdk: 3.0.9
   banuba_arcloud: ^1.0.4
+  video_player: ^2.10.0
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -54,7 +56,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

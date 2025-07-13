@@ -5,16 +5,22 @@ import 'package:banuba_sdk_example/page_camera.dart';
 import 'package:banuba_sdk_example/page_image.dart';
 import 'package:banuba_sdk_example/page_touchup.dart';
 import 'package:banuba_sdk_example/page_arcloud.dart';
+import 'package:banuba_sdk_example/pages/camera_page_clean.dart';
+import 'package:banuba_sdk_example/utils/helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-const banubaToken = <#"Place Token here";#>;
+String banubaToken = "";
 
 enum EntryPage { camera, image, touchUp, arCloud }
 
-void main() {
+void main() async {
+  // Load environment variables from .env file
+  await dotenv.load(fileName: ".env");
+
+  // Initialize the banuba token from environment variables
+  banubaToken = dotenv.env['BANUBA_TOKEN'] ?? "";
+
   runApp(const MaterialApp(home: MyApp()));
 }
 
@@ -80,7 +86,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       case EntryPage.camera:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const CameraPage()),
+          MaterialPageRoute(
+              builder: (context) => CameraPageClean(banubaToken: banubaToken)),
         );
         return;
 
@@ -108,40 +115,4 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 }
 
-Future<String> generateFilePath(String prefix, String fileExt) async {
-  final directory = await getTemporaryDirectory();
-  final filename = '$prefix${DateTime.now().millisecondsSinceEpoch}$fileExt';
-  return '${directory.path}${Platform.pathSeparator}$filename';
-}
-
-// This is a sample implementation of requesting permissions.
-// It is expected that the user grants all permissions. This solution does not handle the case
-// when the user denies access or navigating the user to Settings for granting access.
-// Please implement better permissions handling in your project.
-Future<bool> requestPermissions() async {
-  final requiredPermissions = _getPlatformPermissions();
-  for (var permission in requiredPermissions) {
-    var ps = await permission.status;
-    if (!ps.isGranted) {
-      ps = await permission.request();
-      if (!ps.isGranted) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-List<Permission> _getPlatformPermissions() {
-  return [Permission.camera, Permission.microphone];
-}
-
-void showToastMessage(String message) {
-  Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.CENTER,
-      timeInSecForIosWeb: 1,
-      textColor: Colors.white,
-      fontSize: 14.0);
-}
+// Helper functions have been moved to utils/helpers.dart

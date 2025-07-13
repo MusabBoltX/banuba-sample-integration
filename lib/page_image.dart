@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'main.dart';
+import 'utils/helpers.dart';
 
 class ImagePage extends StatefulWidget {
   const ImagePage({super.key});
@@ -143,7 +144,8 @@ class _ImagePageState extends State<ImagePage> with WidgetsBindingObserver {
     final imageEmpty = _pickedImageFile == null;
 
     return Stack(children: [
-      SizedBox(width: screenSize.width, height: screenSize.height, child: _epWidget),
+      SizedBox(
+          width: screenSize.width, height: screenSize.height, child: _epWidget),
       Positioned(
         bottom: screenSize.height * 0.15,
         left: screenSize.width * 0.05,
@@ -152,8 +154,10 @@ class _ImagePageState extends State<ImagePage> with WidgetsBindingObserver {
           child: Column(
             children: [
               actionButton("Pick Image", imageEmpty, () => _pickImage()),
-              actionButton("Apply Effect", !imageEmpty, () => _applyNormaEffect()),
-              actionButton("Apply Beauty", !imageEmpty, () => _applyTouchUpEffect()),
+              actionButton(
+                  "Apply Effect", !imageEmpty, () => _applyNormaEffect()),
+              actionButton(
+                  "Apply Beauty", !imageEmpty, () => _applyTouchUpEffect()),
               actionButton("Save Image", !imageEmpty, () => _saveImage()),
             ],
           ),
@@ -169,7 +173,9 @@ class _ImagePageState extends State<ImagePage> with WidgetsBindingObserver {
                   const Text(
                     'Smooth',
                     style: TextStyle(
-                        fontSize: 16.0, color: Colors.greenAccent, fontWeight: FontWeight.bold),
+                        fontSize: 16.0,
+                        color: Colors.greenAccent,
+                        fontWeight: FontWeight.bold),
                   ),
                   Card(
                       child: Slider(

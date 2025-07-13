@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'main.dart';
+import 'utils/helpers.dart';
 
 class ARCloudPage extends StatefulWidget {
   const ARCloudPage({super.key});
@@ -19,7 +20,8 @@ class _ARCloudPageState extends State<ARCloudPage> with WidgetsBindingObserver {
   static const _tag = 'ARCloud';
 
   // Bucket with Demo effects, can be replaced by your own AR Cloud URL
-  static const _arCloudUrl = 'https://api.arcloud.banuba.net/v1/effects/far_test_v1.2';
+  static const _arCloudUrl =
+      'https://api.arcloud.banuba.net/v1/effects/far_test_v1.2';
 
   bool _isProcessing = false;
 
@@ -115,7 +117,8 @@ class _ARCloudPageState extends State<ARCloudPage> with WidgetsBindingObserver {
   }
 
   Future<void> _handleLoadedEffects(List<Effect> allEffects) async {
-    debugPrint('$_tag: _handleLoadedEffects, effectToDownload = $_effectToDownload');
+    debugPrint(
+        '$_tag: _handleLoadedEffects, effectToDownload = $_effectToDownload');
 
     // The sample demonstrates how to download new effect from AR Cloud, how to apply once this
     // effect is downloaded.
@@ -134,9 +137,10 @@ class _ARCloudPageState extends State<ARCloudPage> with WidgetsBindingObserver {
 
     // Check if there pending effect to download
     if (_effectToDownload != null) {
-      final downloadedEffect =
-          allEffects.firstWhereOrNull((element) => element.eTag == _effectToDownload!.eTag);
-      debugPrint('$_tag: _handleLoadedEffects, downloadedEffect = $downloadedEffect');
+      final downloadedEffect = allEffects.firstWhereOrNull(
+          (element) => element.eTag == _effectToDownload!.eTag);
+      debugPrint(
+          '$_tag: _handleLoadedEffects, downloadedEffect = $downloadedEffect');
       if (downloadedEffect != null && downloadedEffect.isDownloaded) {
         // Great! Effect is downloaded and prepared to be applied
         _isProcessing = false;
@@ -149,7 +153,8 @@ class _ARCloudPageState extends State<ARCloudPage> with WidgetsBindingObserver {
 
     if (requestToDownload) {
       // Find the first not downloaded effect
-      _effectToDownload = allEffects.firstWhereOrNull((element) => !element.isDownloaded);
+      _effectToDownload =
+          allEffects.firstWhereOrNull((element) => !element.isDownloaded);
 
       debugPrint('$_tag: Found effect to download = $_effectToDownload');
 
@@ -177,7 +182,8 @@ class _ARCloudPageState extends State<ARCloudPage> with WidgetsBindingObserver {
     debugPrint('$_tag: build: isProcessing = $_isProcessing');
 
     return Stack(children: [
-      SizedBox(width: screenSize.width, height: screenSize.height, child: _epWidget),
+      SizedBox(
+          width: screenSize.width, height: screenSize.height, child: _epWidget),
       Positioned(
           bottom: screenSize.height * 0.03,
           left: screenSize.width * 0.35,
